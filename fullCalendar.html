@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="calendarStyle.css">
+
+    <!-- CSS for FullCalendar -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css" rel="stylesheet" />
+
+    <!-- JS for jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- JS for FullCalendar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+
+    <!-- Bootstrap CSS and JS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <title>Barber Booking Timetable</title>
+    <button type="button" class="btn btn-primary" id="changeDefaultShiftTimes">Change Default Shift Times</button>
+
+</head>
+<body>
+    <h1>Barber Booking Timetable</h1>
+    <div id="calendar"></div>
+
+    <script>
+        var selectedDate; // Store the selected date
+        var selectedRange; // Store the selected range
+        var startTime; // Store the start time
+        var endTime; // Store the end time
+        
+        $(document).ready(function() {
+            var calendar = $('#calendar').fullCalendar({
+                eventColor: '#DA70D6',
+                timeFormat: 'hh:mm a',
+                defaultView: 'agendaWeek',
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                viewRender: function(view, element) {
+                    // Load day off and break events from the database
+                    loadDayOffEvents(calendar);
+                    loadBreakEvents(calendar, selectedDate);
+                },
+                events: 'get_events.php',
+                selectable: true,
+                selectHelper: true,
+                
+                // Modify the 'select' event handler
+                select: function(start, end, jsEvent, view) {
+                    // Store the selected date
+                    selectedDate = start.format('YYYY-MM-DD');
+
+                    // Set the date input field in the "Book Break" modal to the selected date
+                    $('#breakDate').val(selectedDate);
+
+                    $('#dayOfWeek').val(selectedDate);
+                    
+                    $('#myModal').modal('show');
+                },
+
+                eventClick: function(event, jsEvent, view) {
+                    // Handle clicking on an event (marked day off or break)
+                    if (event.backgroundColor === 'red') {
+                        // Open the modal to toggle the day off status
+                        selectedDate = event.start.format('YYYY-MM-DD');
+                        $('#dayOfWeek').val(selectedDate);
+                        $('#myModal').modal('show');
+                    }
+                },
+
+
+            });
+
+            calendar.fullCalendar('viewRender', calendar.fullCalendar('getView'));
+    
+            $('#selectRange').change(function() {
+                selectedRange = $(this).val();
+    
+                // Show or hide the time inputs based on the selected range
+                if (selectedRange === 'full-day') {
+                    $('#timeInputs').hide();
+                } else {
+                    $('#timeInputs').show();
+                }
+            });
+    
+            // Add an event handler for the "Change Default Shift Times" button
+            $('#changeDefaultShiftTimes').click(function() {
+                // Clear any previous input values
+                $('#shiftStartTime').val('');
+                $('#shiftEndTime').val('');
+
+                // Show the shift modal
+                $('#shiftModal').modal('show');
+            });
+
+            // Add an event handler for the "Save" button in the shift modal
+            $('#saveShiftTimes').click(function() {
+                // Get the selected shift start and end times from the inputs
+                var shiftStart = $('#shiftStart').val();
+                var shiftEnd = $('#shiftEnd').val();
+
+                // Validate the input values (you can add more validation as needed)
+                if (!shiftStart || !shiftEnd) {
+                    alert('Please fill in both shift start and end times.');
+                    return;
+                }
+
+                // Create an array to store the entries
+                var entries = [];
+
+                // Get the current date and time
+                var currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0); // Set the time to midnight
+
+                // Loop to create 7 entries, each for a day after the previous
+                for (var i = 0; i < 7; i++) {
+                    var entryDate = new Date(currentDate);
+                    entryDate.setDate(entryDate.getDate() + i); // Add 'i' days
+
+                    // Format the date in 'YYYY-MM-DD' format
+                    var formattedDate = entryDate.toISOString().split('T')[0];
+
+                    // Create an entry object
+                    var entry = {
+                        currentDate: formattedDate,
+                        shiftStart: shiftStart,
+                        shiftEnd: shiftEnd
+                    };
+
+                    // Add the entry to the array
+                    entries.push(entry);
+                }
+
+                // Send an AJAX request to insert the entries into the database
+                $.ajax({
+                    url: 'insert_default_shift.php', // Replace with the appropriate URL
+                    method: 'POST',
+                    data: { entries: JSON.stringify(entries) }, // Send the entries as JSON
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            console.log('Shift entries added to the database successfully.');
+                        } else {
+                            console.error('Failed to add shift entries to the database.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error: ' + status + ' - ' + error);
+                    }
+                });
+
+                // Close the shift modal
+                $('#shiftModal').modal('hide');
+            });
+
+            // Add an event handler for the "Book Break" button in the break modal
+            $('#submitBreakModal').click(function() {
+                var breakDate = $('#breakDate').val();
+                var breakStartTime = $('#breakStartTime').val();
+                var breakEndTime = $('#breakEndTime').val();
+
+                // Check if any of the input fields are empty
+                if (!breakDate || !breakStartTime || !breakEndTime) {
+                    alert('Please fill in all fields.');
+                    return;
+                }
+
+                // Send an AJAX request to add the break to the database
+                $.ajax({
+                    url: 'offHours.php',
+                    method: 'POST',
+                    data: {
+                        currentDate: breakDate,
+                        offStart: breakStartTime,
+                        offEnd: breakEndTime
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            console.log('Break added to the database successfully.');
+                            // Construct the event title with the desired format
+                            var eventTitle = 'Break: ' + breakStartTime + ' - ' + breakEndTime;
+
+                            // Add the break event to the calendar with the updated title
+                            calendar.fullCalendar('renderEvent', {
+                                title: eventTitle,
+                                start: breakDate + 'T' + breakStartTime, // Combine date and time
+                                end: breakDate + 'T' + breakEndTime,     // Combine date and time
+                                backgroundColor: 'blue'
+                            });
+                        } else {
+                            console.error('Failed to add break to the database.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+
+                // Close the modal
+                $('#breakModal').modal('hide');
+            });
+
+            // Add an event handler for the "Remove Day Off" button in the day off modal
+            $('#removeDayOff').click(function() {
+                if (selectedDate) {
+                    var isDayOff = isDayOffDate(selectedDate);
+
+                    if (isDayOff) {
+                        calendar.fullCalendar('removeEvents', function(event) {
+                            return event.start.format('YYYY-MM-DD') === selectedDate && event.backgroundColor === 'red';
+                        });
+
+                        // Send an AJAX request to remove the day off from the database
+                        $.ajax({
+                            url: 'remove_day_off.php', // Replace with the appropriate URL
+                            method: 'POST',
+                            data: {
+                                bookingDay: selectedDate,
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                if (data.success) {
+                                    console.log('Day off removed from the database successfully.');
+                                } else {
+                                    console.error('Failed to remove day off from the database.');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('AJAX error: ' + status + ' - ' + error);
+                            }
+                        });
+                    } else {
+                        // Display a popup message when there is no day off booked
+                        alert('There is no day off booked on this day.');
+                    }
+                }
+
+                // Close the modal
+                $('#dayOffModal').modal('hide');
+            });
+
+
+
+            // Add an event handler for the "Book Day Off" button in the day off modal
+            $('#submitDayOffModal').click(function() {
+                if (selectedDate) {
+                    var isDayOff = isDayOffDate(selectedDate);
+
+                    if (isDayOff) {
+                        // Display a popup message when there is already a day off booked
+                        alert('There is already a day off booked for this day.');
+                    } else {
+                        // Send an AJAX request to add the day off to the database
+                        $.ajax({
+                            url: 'fetch_days_off.php',
+                            method: 'POST',
+                            data: {
+                                bookingDay: selectedDate,
+                            },
+                            dataType: 'json',
+                            success: function(data) {
+                                if (data.success) {
+                                    console.log('Day off added to the database successfully.');
+                                } else {
+                                    console.error('Failed to add day off to the database.');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error);
+                            }
+                        });
+
+                        // If a day off is not booked, you can continue with the booking process
+                        calendar.fullCalendar('removeEvents', function(event) {
+                            return event.start.format('YYYY-MM-DD') == selectedDate;
+                        });
+
+                        // Mark the selected date as a day off and highlight it in red on the calendar
+                        calendar.fullCalendar('renderEvent', {
+                            title: 'Day Off',
+                            start: selectedDate,
+                            allDay: true,
+                            backgroundColor: 'red'
+                        });
+                    }
+                }
+
+                // Close the modal
+                $('#dayOffModal').modal('hide');
+            });
+
+            // Add an event handler for the "Remove Break" button in the break modal
+            $('#removeBreak').click(function() {
+                // Populate the viewBreaksModal with breaks and show it
+                populateViewBreaksModal(selectedDate);
+                $('#breakModal').modal('hide'); // Hide the booking break modal
+                $('#viewBreaksModal').modal('show'); // Show the view breaks modal
+            });
+
+            // Event handler for the "Remove Selected Breaks" button in the viewBreaksModal
+            $('#removeSelectedBreaks').click(function() {
+                // Get all selected break checkboxes
+                var selectedBreaks = $('.breakCheckbox:checked');
+
+                if (selectedBreaks.length === 0) {
+                    alert('Please select at least one break to remove.');
+                    return;
+                }
+
+                // Iterate through selected checkboxes and remove the corresponding breaks
+                selectedBreaks.each(function() {
+                    var breakId = $(this).val();
+
+                    // Implement the removal of the selected break using the breakId
+                    // Be sure to update the calendar and the database accordingly
+
+                    // Example AJAX request to remove a break (you may need to customize this)
+                    $.ajax({
+                    url: 'remove_break.php', // Replace with the appropriate URL
+                    method: 'POST',
+                    data: {
+                        currentDate: selectedDate, // Pass the currentDate variable
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            console.log('Break removed from the database successfully.');
+                        } else {
+                            console.error('Failed to remove break from the database.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error: ' + status + ' - ' + error);
+                    }
+                });
+
+                    // Remove the corresponding break event from the calendar
+                    calendar.fullCalendar('removeEvents', function(event) {
+                        return event.id === breakId;
+                    });
+                });
+
+                // Close the viewBreaksModal after removing breaks
+                $('#viewBreaksModal').modal('hide');
+            });
+
+
+            function populateViewBreaksModal(date) {
+            // Get all the break events on the selected date
+            var breakEvents = getBreakEvents(date);
+
+            // Clear the existing break list
+            var $breakList = $('#breakList');
+            $breakList.empty();
+
+            // Populate the list with breaks and tick boxes
+            breakEvents.forEach(function(event) {
+                // Format the break event for display
+                var startTime = moment(event.start).format('hh:mm a');
+                var endTime = moment(event.end).format('hh:mm a');
+                
+                // Create a checkbox element
+                var checkbox = '<input type="checkbox" class="breakCheckbox" value="' + event.id + '">';
+
+                // Create the list item with a checkbox
+                var listItem = '<li>' + checkbox + ' ' + startTime + ' - ' + endTime + '</li>';
+                $breakList.append(listItem);
+            });
+        }
+
+
+            // Event handler for the "Remove" button in the removeBreakModal
+            $('#confirmRemoveBreak').click(function() {
+                // Implement the removal of a break as needed
+                // You can use the break ID or other identifying information to remove the break
+                // Be sure to update the calendar and the database accordingly
+            });
+
+
+    
+            // Function to check if a date is marked as a day off
+
+            function isDayOffDate(date) {
+            var events = calendar.fullCalendar('clientEvents');
+                for (var i = 0; i < events.length; i++) {
+                    if (events[i].backgroundColor === 'red' && events[i].start.format('YYYY-MM-DD') === date) {
+                        return true;
+                 }
+                }
+                return false;
+            }
+
+            function isBreakDate(date) {
+            var events = calendar.fullCalendar('clientEvents');
+                for (var i = 0; i < events.length; i++) {
+                    if (events[i].backgroundColor === 'blue' && events[i].start.format('YYYY-MM-DD') === date) {
+                        return true;
+                 }
+                }
+                return false;
+            }
+
+    
+            function loadDayOffEvents(calendar) {
+                // Perform an AJAX request to retrieve day off events from your database
+                $.ajax({
+                    url: 'render_day_off_events.php', // Replace with the appropriate URL
+                    dataType: 'json',
+                    success: function(data) {
+                        // Iterate through the retrieved day off events and render them on the calendar
+                        data.forEach(function(eventData) {
+                            calendar.fullCalendar('renderEvent', {
+                                title: 'Day Off',
+                                start: eventData.start, // Date of the day off
+                                allDay: true,
+                                backgroundColor: 'red'
+                            });
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+
+            function loadBreakEvents(calendar) {
+                // Perform an AJAX request to retrieve break events from your database
+                $.ajax({
+                    url: 'get_break_events.php', // Replace with the appropriate URL
+                    dataType: 'json',
+                    success: function(data) {
+                        // Iterate through the retrieved break events and render them on the calendar
+                        data.forEach(function(eventData, index) { // Add an index parameter
+                            // Parse the start and end times
+                            var startTime = new Date(eventData.start);
+                            var endTime = new Date(eventData.end);
+
+                            // Format the times as hh:mm
+                            var startTimeFormatted = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            var endTimeFormatted = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                            var eventTitle = 'Break: ' + startTimeFormatted + ' - ' + endTimeFormatted;
+
+                            // Add a unique ID to the break event
+                            eventData.id = 'break' + index;
+
+                            calendar.fullCalendar('renderEvent', {
+                                title: eventTitle,
+                                start: eventData.start, // Start time
+                                end: eventData.end,     // End time
+                                backgroundColor: 'blue',
+                                id: eventData.id // Assign the unique ID
+                            });
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+
+            // Function to get break events for a specific date
+            function getBreakEvents(date) {
+                var breakEvents = [];
+                var events = $('#calendar').fullCalendar('clientEvents');
+
+                for (var i = 0; i < events.length; i++) {
+                    if (events[i].backgroundColor === 'blue' && events[i].start.format('YYYY-MM-DD') === date) {
+                        breakEvents.push(events[i]);
+                    }
+                }
+
+                return breakEvents;
+            }
+
+            // Function to periodically update the shifts in the database
+            function updateShifts() {
+                $.ajax({
+                    url: 'update_shifts.php', // Replace with the correct URL
+                    method: 'GET', // You can use GET or POST, depending on your server configuration
+                    success: function(data) {
+                        // Handle the response if needed
+                        console.log('Shifts updated successfully.');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to update shifts: ' + status + ' - ' + error);
+                    }
+                });
+            }
+
+            // Set an interval to update shifts periodically (e.g., every day)
+            var updateInterval = 24 * 60 * 60 * 1000; // 24 hours
+            setInterval(updateShifts, updateInterval);
+
+            // Initial update when the page loads
+            updateShifts();
+
+
+        // Add an event handler for the "Book Days Off" button
+        $('#bookDayOff').click(function() {
+            // Display the modal with day off options
+            $('#myModal').modal('hide'); // Hide the option modal
+            $('#dayOffModal').modal('show'); // Show the day off modal
+        });
+
+        // Add an event handler for the "Book Breaks" button
+        $('#bookBreak').click(function() {
+            // Display the modal with break options
+            $('#myModal').modal('hide'); // Hide the option modal
+            $('#breakModal').modal('show'); // Show the break modal
+        });
+
+        // Add an event handler for the "Select Shift Start/End Times" button
+        $('#selectShift').click(function() {
+            // Display the modal with shift options
+            $('#myModal').modal('hide'); // Hide the option modal
+            $('#shiftModal').modal('show'); // Show the shift modal
+        });
+    });
+
+
+    </script>
+    
+
+<!-- Add a modal for the three options -->
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Select an Option</h4>
+            </div>
+            <div class="modal-body">
+                <button type="button" class="btn btn-primary" id="bookDayOff">Book/Remove Day Off</button>
+                <button type="button" class="btn btn-success" id="bookBreak">Book/Remove Breaks</button>
+                <button type="button" class="btn btn-info" id="selectShift">Change Shift Start/End Times</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a modal for booking days off -->
+<div class="modal fade" id="dayOffModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content for booking days off -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Book/Remove Day Off</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="dayOffDate">Select Date:</label>
+                    <input type="date" id="dayOffDate" class="form-control" readonly> <!-- Make it readonly -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="removeDayOff">Remove Day Off</button>
+                <button type="button" class="btn btn-primary" id="submitDayOffModal">Book Day Off</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a modal for booking breaks -->
+<div class="modal fade" id="breakModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content for booking breaks -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Book/Remove Break</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="breakDate">Select Date:</label>
+                    <input type="date" id="breakDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="breakStartTime">Start Time:</label>
+                    <input type="time" id="breakStartTime" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="breakEndTime">End Time:</label>
+                    <input type="time" id="breakEndTime" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="removeBreak">Remove Break</button>
+                <button type="button" class="btn btn-success" id="submitBreakModal">Book Break</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a modal for viewing breaks -->
+<div class="modal fade" id="viewBreaksModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content for viewing breaks -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Breaks on Selected Day</h4>
+            </div>
+            <div class="modal-body">
+                <ul id="breakList">
+                    <!-- Breaks with checkboxes will be displayed here -->
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="removeSelectedBreaks">Remove Selected Breaks</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add a modal for selecting shift start/end times -->
+<div class="modal fade" id="shiftModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content for selecting shift times -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Select Deafault Shift Times</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="shiftStartTime">Shift Start Time:</label>
+                    <input type="time" id="shiftStart" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="shiftEndTime">Shift End Time:</label>
+                    <input type="time" id="shiftEnd" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveShiftTimes">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Add a modal for selecting shift start/end times -->
+<div class="modal fade" id="shiftModal" role="dialog">
+    <!-- ... (your shift modal content) ... -->
+</div>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+/* Common styles for all views */
+.fc-event {
+    height: auto; /* Let the height adjust based on content */
+    min-height: 60px; /* Set a minimum height to ensure a minimum size */
+    text-align: center; /* Center event content horizontally */
+    line-height: 1.2; /* Adjust as needed for vertical centering */
+}
+
+.fc-event-title {
+    margin-top: 5px; /* Add some margin to separate time and title */
+}
+
+/* Increase specificity to override other styles */
+#calendar .fc button {
+    background-color: blue !important;
+    color: white !important;
+    border-color: blue !important;
+}
+
+/* Override the hover style for the header buttons (optional) */
+#calendar .fc button:hover {
+    background-color: darkblue !important;
+    border-color: darkblue !important;
+}
+
+
+/* Additional styles for monthly view */
+.fc-month-view .fc-event {
+    /* Use the same styles as for the weekly view */
+    height: auto;
+    min-height: 60px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.fc-month-view .fc-event-title {
+    /* Use the same styles as for the weekly view */
+    margin-top: 5px;
+}
+
+/* Additional styles for daily view */
+.fc-agendaDay-view .fc-event {
+    /* Use the same styles as for the weekly view */
+    height: auto;
+    min-height: 60px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.fc-agendaDay-view .fc-event-title {
+    /* Use the same styles as for the weekly view */
+    margin-top: 5px;
+}
+
+

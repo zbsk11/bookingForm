@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* Style for the login container */
+h1 {
+    margin: 20px 0;
+    color: #333;
+}
+
+#loginForm {
+    background-color: #fff;
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for form elements */
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+input[type="submit"] {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Style for the error message */
+#loginError {
+    color: red;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Style for the "Show Password" button */
+#showPasswordButton {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+#showPasswordButton:hover {
+    background-color: #0056b3;
+}
+
+    </style>
+    <title>Login Page</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm" action="login.php" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <button type="button" id="showPasswordButton">Show Password</button><br><br>
+
+        <input type="submit" value="Login">
+    </form>
+
+    <div id="loginError" style="color: red;"></div>
+
+    <script>
+        // Function to toggle password visibility
+        function togglePasswordVisibility() {
+            var passwordInput = document.getElementById("password");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+            } else {
+                passwordInput.type = "password";
+            }
+        }
+
+        // Add event listener to the "Show Password" button
+        document.getElementById("showPasswordButton").addEventListener("click", function () {
+            togglePasswordVisibility();
+        });
+
+        // Handle form submission
+        document.getElementById("loginForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent the form from submitting
+
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+
+            // Perform an AJAX request to validate the login
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "login.php", true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status === "success") {
+                        // Redirect to the FullCalendar page upon successful login
+                        window.location.href = "fullCalendar.html";
+                    } else {
+                        // Display an error message to the user
+                        document.getElementById("loginError").innerHTML = response.message;
+                    }
+                }
+            };
+
+            // Send the login data to the server for validation
+            xhr.send("username=" + username + "&password=" + password);
+        });
+    </script>
+</body>
+</html>

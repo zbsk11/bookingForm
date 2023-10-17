@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My test page</title>
+
+        <!-- Add the Hosted Payment Pages JavaScript library to your page -->
+        <script src="https://payments.worldpay.com/resources/hpp/integrations/embedded/js/hpp-embedded-integration-library.js"></script>
+    </head>
+
+    <body>
+        <div>This is my test page as a merchant</div>
+
+        <!-- Add a container for where the Hosted Payment Pages iframe is injected -->
+        <div id="custom-html"></div>
+
+        <!-- Use JavaScript to inject the iframe into the container -->
+        <script type="text/javascript">
+            // Your custom options for injecting the iframe
+            var customOptions = {
+                url: 'https://payments.worldpay.com/ngpp/integration/wpg/corporate?OrderKey=YOUR_ORDER_KEY&Ticket=YOUR_TICKET_ID',
+                type: 'iframe',
+                inject: 'onload',
+                target: 'custom-html',
+                accessibility: true,
+                debug: false,
+            };
+            // Initialize the library and pass options
+            var libraryObject = new WPCL.Library();
+            libraryObject.setup(customOptions);
+        </script>
+    </body>
+
+</html>
