@@ -8,8 +8,14 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
     body {
-      background-color: #f4f4f4;
+      background-color: #000;
       font-family: Arial, sans-serif;
+      color: #fff; /* Set text color to white */
+    }
+
+    #serviceName {
+        background-color: #000; /* Set the background color to black */
+        color: #fff; /* Set the text color to white */
     }
 
     .form-group {
@@ -18,7 +24,7 @@
 
     label {
       font-weight: bold;
-      color: #333;
+      color: #fff; /* Set label text color to white */
     }
 
     /* Set the width of the input fields */
@@ -29,8 +35,19 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
-      background-color: #f9f9f9;
-      color: #333;
+      background-color: #000; /* Set input background color to black */
+      color: #fff; /* Set input text color to white */
+    }
+
+    #firstName,
+    #number,
+    #email {
+        background-color: #000; /* Set the background color to black */
+        color: #fff; /* Set the text color to white */
+        border: 1px solid #ccc; /* Add a border to maintain input styling */
+        border-radius: 4px;
+        font-size: 16px;
+        padding: 10px;
     }
 
     /* Add text-align: center; to center the time-slot buttons horizontally */
@@ -42,20 +59,20 @@
     }
 
     .time-slot-button {
-    margin-right: 10px;
-    border: 1px solid purple;
-    border-radius: 15px;
-    padding: 10px 20px;
-    background-color: transparent;
-    color: purple;
-    transition: background-color 0.3s ease;
-    width: 100px; /* Set a fixed width for all time slot buttons */
-    margin-bottom: 10px; /* Add margin between rows */
+      margin-right: 10px;
+      border: 1px solid purple;
+      border-radius: 15px;
+      padding: 10px 20px;
+      background-color: #000; /* Set time slot button background color to black */
+      color: purple;
+      transition: background-color 0.3s ease;
+      width: 100px; /* Set a fixed width for all time slot buttons */
+      margin-bottom: 10px; /* Add margin between rows */
     }
 
     .time-slot-button.selected {
       background-color: purple;
-      color: #fff;
+      color: #fff; /* Set text color to white */
     }
 
     .booking-day-button {
@@ -65,17 +82,19 @@
       width: 30px; /* Set a fixed width for the buttons */
       height: 30px; /* Set a fixed height for the buttons */
       border-radius: 50%; /* Create a circular shape */
+      color: #fff; /* Set the text color to white */
     }
 
     .booking-day-button.selected {
       background-color: purple;
-      color: #fff;
+      color: #fff; /* Set text color to white */
     }
 
     .day-label {
       text-align: center;
       font-weight: bold;
       font-size: 12px; /* Adjust the font size as needed */
+      color: #fff; /* Set text color to white */
     }
 
     .day-container {
@@ -102,7 +121,7 @@
 
     .btn-book {
       background-color: purple;
-      color: #fff;
+      color: #fff; /* Set button text color to white */
       border: none;
       border-radius: 15px;
       padding: 15px 30px;
@@ -115,6 +134,7 @@
       background-color: #ccc; /* Change color for disabled state */
       cursor: not-allowed;
     }
+
   </style>
 </head>
 <body>
