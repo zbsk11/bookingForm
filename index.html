@@ -10,52 +10,60 @@
     body {
       background-color: #000;
       font-family: Arial, sans-serif;
-      color: #fff; /* Set text color to white */
+      color: #fff;
     }
 
-    #serviceName {
-        background-color: #000; /* Set the background color to black */
-        color: #fff; /* Set the text color to white */
+    .container {
+      width: 50%;
+      margin: 0 auto;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-top: 200px;
+      margin-bottom: 70px;
+      position: relative;
+      right: 5%;
+      
     }
 
-    label {
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
       font-weight: bold;
-      color: #fff; /* Set label text color to white */
+      color: #fff;
+      font-size: 50px;
+    
+      max-width: 100%; /* Set a maximum width */
+      word-wrap: break-word;
     }
 
-    /* Set the width of the input fields */
-    input[type="text"],
-    input[type="number"],
-    input[type="email"] {
-      padding: 10px;
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="email"] {
+      width: 110%;
+      padding: 20px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 16px;
-      background-color: #000; /* Set input background color to black */
-      color: #fff; /* Set input text color to white */
+      font-size: 35px;
+      background-color: #000;
+      color: #fff;
     }
 
-    #firstName,
-    #number,
-    #email {
-        background-color: #000; /* Set the background color to black */
-        color: #fff; /* Set the text color to white */
-        border: 1px solid #ccc; /* Add a border to maintain input styling */
-        border-radius: 4px;
-        font-size: 16px;
-        padding: 10px;
+    #serviceName {
+      background-color: #000;
+      color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 35px;
+      padding: 20px;
+      width: 110%;
     }
 
-    /* Add text-align: center; to center the time-slot buttons horizontally */
     #timeSlotButtons {
       text-align: center;
       display: flex;
       justify-content: center;
-      flex-wrap: wrap; /* Add flex-wrap property for wrapping */
+      flex-wrap: wrap;
     }
 
     .time-slot-button {
@@ -63,38 +71,38 @@
       border: 1px solid purple;
       border-radius: 15px;
       padding: 10px 20px;
-      background-color: #000; /* Set time slot button background color to black */
+      background-color: #000;
       color: purple;
       transition: background-color 0.3s ease;
-      width: 100px; /* Set a fixed width for all time slot buttons */
-      margin-bottom: 10px; /* Add margin between rows */
+      width: 100px;
+      margin-bottom: 10px;
     }
 
     .time-slot-button.selected {
       background-color: purple;
-      color: #fff; /* Set text color to white */
+      color: #fff;
     }
 
     .booking-day-button {
       margin-right: 10px;
-      border: none; /* Remove button borders */
-      padding: 0; /* Remove button padding */
-      width: 30px; /* Set a fixed width for the buttons */
-      height: 30px; /* Set a fixed height for the buttons */
-      border-radius: 50%; /* Create a circular shape */
-      color: #fff; /* Set the text color to white */
+      border: none;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: #fff;
     }
 
     .booking-day-button.selected {
       background-color: purple;
-      color: #fff; /* Set text color to white */
+      color: #fff;
     }
 
     .day-label {
       text-align: center;
       font-weight: bold;
-      font-size: 12px; /* Adjust the font size as needed */
-      color: #fff; /* Set text color to white */
+      font-size: 40px;
+      color: #fff;
     }
 
     .day-container {
@@ -106,101 +114,86 @@
 
     .day-names {
       display: flex;
-      justify-content: center; /* Center the day names horizontally */
+      justify-content: center;
       margin-bottom: 10px;
     }
 
     .day-buttons {
       display: flex;
-      justify-content: center; /* Center the buttons horizontally */
+      justify-content: center;
+      gap: 1.5rem;
     }
 
     .day-buttons button {
-      margin: 0 10px; /* Add margin between buttons */
+      margin: 0 10px;
+      font-size: 30px;
     }
 
     .btn-book {
+      
       background-color: purple;
-      color: #fff; /* Set button text color to white */
+      color: #fff;
       border: none;
-      border-radius: 15px;
-      padding: 15px 30px;
+      font-size: 40px;
+      border-radius: 30px;
+      padding: 10px 50px;
       text-align: center;
       display: block;
       margin: 0 auto;
     }
 
     .btn-book:disabled {
-      background-color: #ccc; /* Change color for disabled state */
+      background-color: #ccc;
       cursor: not-allowed;
+      position: relative;
+      
     }
+
+
+
 
   </style>
 </head>
 <body>
 <div class="container">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="panel panel-primary">
-      <div class="panel-heading text-center" style="margin-top: 20px; margin-bottom: 20px;">
-        <h1 style="color: black; font-weight: bold;">Book an Appointment</h1>
-      </div>
-
-        <div class="panel-body">
-          <form action="connect.php" method="post">
-            <div class="row">
-              <!-- Use Bootstrap grid system with three equal columns -->
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="firstName">Name</label>
-                  <input type="text" class="form-control" id="firstName" name="firstName" />
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="number">Phone Number</label>
-                  <input type="number" class="form-control" id="number" name="number" />
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="email">Email</label>
-                  <input type="email" class="form-control" id="email" name="email" />
-                </div>
-              </div>
-            </div>
-
-            <div class="day-names" id="dayNames">
-              <!-- Day names will be populated dynamically via JavaScript -->
-            </div>
-            <div class="day-buttons" id="bookingDayButtons">
-              <!-- Booking Day buttons will be populated dynamically via JavaScript -->
-            </div>
-            <div class="form-group">
-              <div id="timeSlotButtons">
-                <!-- Time Slot buttons will be populated dynamically via JavaScript -->
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="serviceName">Service Name</label>
-              <select class="form-control" id="serviceName" name="serviceName">
-                <option value="skin fade">Skin Fade</option>
-                <option value="skin fade + dye">Skin Fade + Dye</option>
-                <option value="shapeup">Shapeup</option>
-                <option value="hair + beard">Hair + Beard</option>
-              </select>
-            </div>
-            <!-- Hidden input to store selected day -->
-            <input type="hidden" id="selectedDay" name="selectedDay" value="" />
-            <!-- Hidden input to store selected time slot -->
-            <input type="hidden" id="timeSlot" name="timeSlot" value="" />
-            <input type="submit" class="btn btn-book" value="Book" id="bookButton" disabled /> <!-- Give the button an ID -->
-            <input type="submit" value="Buy" id="buyButton">
-          </form>
-        </div>
-      </div>
-    </div>
+  <div class="form-group">
+    <label for="firstName">Name</label>
+    <input type="text" id="firstName" name="firstName" />
   </div>
+  <div class="form-group">
+    <label for="number">Phone Number</label>
+    <input type="number" id="number" name="number" />
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" />
+  </div>
+
+  <div class="day-names" id="dayNames">
+    <!-- Day names will be populated dynamically via JavaScript -->
+  </div>
+  <div class="day-buttons" id="bookingDayButtons">
+    <!-- Booking Day buttons will be populated dynamically via JavaScript -->
+  </div>
+  <div id="timeSlotButtons">
+    <!-- Time Slot buttons will be populated dynamically via JavaScript -->
+  </div>
+
+  <div class="form-group">
+    <label for="serviceName">Service Name</label>
+    <select id="serviceName" name="serviceName">
+      <option value="skin fade">Skin Fade</option>
+      <option value="skin fade + dye">Skin Fade + Dye</option>
+      <option value="shapeup">Shapeup</option>
+      <option value="hair + beard">Hair + Beard</option>
+    </select>
+  </div>
+
+  <input type="hidden" id="selectedDay" name="selectedDay" value="" />
+    <!-- Hidden input to store selected time slot -->
+    <input type="hidden" id="timeSlot" name="timeSlot" value="" />
+    <input type="submit" class="btn btn-book" value="Book" id="bookButton" disabled /> <!-- Give the button an ID -->
+    <input type="submit" value="Buy" id="buyButton">
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Use the full jQuery version -->
